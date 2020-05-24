@@ -16,16 +16,43 @@
 # along with this library. If not, see <http://www.gnu.org/licenses/>.
 #############################################################################
 
-option(STABLECODER_SCRIPTS_VERSION 20.04)
+function(install_stablecoder_script)
+  set(oneValueArgs NAME VERSION INSTALL_LOCATION)
+  cmake_parse_arguments(SCRIPT "" "${oneValueArgs}" "" ${ARGN})
 
-macro(install_stablecoder_script SCRIPT)
-  set(SCRIPT_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/${SCRIPT}.cmake")
+  if(NOT DEFINED SCRIPT_NAME)
+    set(SCRIPT_NAME ${ARGV0})
+  endif()
+
+  if(NOT DEFINED SCRIPT_VERSION)
+    set(SCRIPT_VERSION "20.04") # default version
+  endif()
+
+  if(NOT DEFINED INSTALL_LOCATION)
+    set(INSTALL_LOCATION "${CMAKE_BINARY_DIR}/cmake")
+  endif()
+
+  set(SCRIPT_DOWNLOAD_LOCATION "${INSTALL_LOCATION}/${SCRIPT_NAME}.cmake")
 
   if(NOT EXISTS ${SCRIPT_DOWNLOAD_LOCATION})
-    message(STATUS "Downloading StableCoder/cmake-scripts/${SCRIPT}.cmake")
-    file(DOWNLOAD https://raw.githubusercontent.com/StableCoder/cmake-scripts/${STABLECODER_SCRIPTS_VERSION}/${SCRIPT}.cmake ${SCRIPT_DOWNLOAD_LOCATION})
+    set(SCRIPT_URL "https://raw.githubusercontent.com/StableCoder/cmake-scripts/${SCRIPT_VERSION}/${SCRIPT_NAME}.cmake")
+    message(STATUS "Downloading StableCoder/cmake-scripts/${SCRIPT_NAME}.cmake")
+
+    file(DOWNLOAD ${SCRIPT_URL} ${SCRIPT_DOWNLOAD_LOCATION})
+
+    if(NOT EXISTS ${SCRIPT_DOWNLOAD_LOCATION})
+      message(FATAL_ERROR "Unable to download ${SCRIPT_URL}")
+    endif()
+
+    # Make sure the downloaded file is not empty
+    string(MD5 EMPTY_FILE_MD5_HASH "")
+    file(MD5 ${SCRIPT_DOWNLOAD_LOCATION} SCRIPT_MD5)
+
+    if(SCRIPT_MD5 STREQUAL EMPTY_FILE_MD5_HASH)
+      file(REMOVE ${SCRIPT_DOWNLOAD_LOCATION})
+      message(FATAL_ERROR "Downloaded an empty CMake script for ${SCRIPT_NAME}")
+    endif()
   endif()
 
   include(${SCRIPT_DOWNLOAD_LOCATION})
-endmacro()
-
+endfunction()
