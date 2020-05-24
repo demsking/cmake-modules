@@ -52,10 +52,9 @@ function(install_stablecoder_script)
     endif()
 
     # Make sure the downloaded file is not empty
-    string(MD5 EMPTY_FILE_MD5_HASH "")
-    file(MD5 ${SCRIPT_DOWNLOAD_LOCATION} SCRIPT_MD5)
+    file(SIZE ${SCRIPT_DOWNLOAD_LOCATION} SCRIPT_SIZE)
 
-    if(SCRIPT_MD5 STREQUAL EMPTY_FILE_MD5_HASH)
+    if(SCRIPT_SIZE EQUAL 0)
       file(REMOVE ${SCRIPT_DOWNLOAD_LOCATION})
       message(FATAL_ERROR "Downloaded an empty CMake script for ${SCRIPT_NAME}")
     endif()
