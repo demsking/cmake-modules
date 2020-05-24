@@ -2,11 +2,12 @@
 # Run CPPLINT on c++ source files as a custom target
 # Copyright (C) 2020 Sébastien Demanou <demsking@gmail.com>
 #
-#  include(CPPLINT)
-#  add_cpplint(<target-name> [cpplint flags]) -
-#    Create a target to check a target's sources with cppcheck and the indicated options
-#  add_cpplint_sources(<target-name> [cpplint flags]) -
-#    Create a target to check standalone sources with cppcheck and the indicated options
+# Usage:
+#   include(CPPLINT)
+#   add_cpplint(<target-name> [cpplint flags])
+#     Create a target to check a target's sources with cppcheck and the indicated options
+#   add_cpplint_sources(<target-name> [cpplint flags])
+#     Create a target to check standalone sources with cppcheck and the indicated options
 #
 # Requires CMake 2.8 or newer (uses VERSION_LESS)
 #
@@ -30,13 +31,18 @@ endif()
 
 set(__add_cpplint YES)
 
-set(CPPLINT_BIN "${CMAKE_BINARY_DIR}/cpplint.py")
+set(CPPLINT_FILE "${CMAKE_BINARY_DIR}/tmp/cpplint")
 
-if(NOT EXISTS ${CPPLINT_BIN})
-  file(DOWNLOAD https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py ${CPPLINT_BIN})
+if(NOT EXISTS ${CPPLINT_FILE})
+  file(DOWNLOAD https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py ${CPPLINT_FILE})
+  file(
+    INSTALL ${CPPLINT_FILE}
+    DESTINATION ${CMAKE_BINARY_DIR}
+    PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ
+  )
 endif()
 
-function(add_cpplint_sources _targetname)
+function(add_cpplint_sources TARGET_NAME)
   list(JOIN ARGN " " _args)
   set(_files)
 
@@ -58,7 +64,7 @@ function(add_cpplint_sources _targetname)
         list(APPEND _files "${_cpplint_loc}")
       else()
         message(FATAL_ERROR
-          "Adding CPPLINT for file target ${_targetname}: "
+          "Adding CPPLINT for file target ${TARGET_NAME}: "
           "File ${_source} does not exist or needs a corrected path location "
           "since we think its absolute path is ${_cpplint_loc}"
         )
@@ -66,29 +72,29 @@ function(add_cpplint_sources _targetname)
     endif()
   endforeach()
 
-  add_custom_target(${_targetname}_cpplint
+  add_custom_target(${PROJECT_NAME}_cpplint
     COMMAND
-      ${CPPLINT_BIN} ${_args} ${_files}
+      ${CMAKE_BINARY_DIR}/cpplint ${_args} ${_files}
     WORKING_DIRECTORY
       "${CMAKE_CURRENT_SOURCE_DIR}"
     COMMENT
-      "Running cpplint on target ${_targetname}..."
+      "Running cpplint on target ${PROJECT_NAME}..."
     VERBATIM
   )
 
-  add_dependencies(${_targetname} ${_targetname}_cpplint)
+  add_dependencies(${TARGET_NAME} ${TARGET_NAME}_cpplint)
 endfunction()
 
-function(add_cpplint _name)
-  if(NOT TARGET ${_name})
+function(add_cpplint PROJECT_NAME)
+  if(NOT TARGET ${PROJECT_NAME})
     message(FATAL_ERROR
-      "add_cpplint given a target name that does not exist: '${_name}' !"
+      "add_cpplint given a target name that does not exist: '${PROJECT_NAME}' !"
     )
   endif()
 
   list(JOIN ARGN " " _args)
 
-  get_target_property(_cpplint_sources "${_name}" SOURCES)
+  get_target_property(_cpplint_sources "${PROJECT_NAME}" SOURCES)
   set(_files)
 
   foreach(_source ${_cpplint_sources})
@@ -100,15 +106,15 @@ function(add_cpplint _name)
     endif()
   endforeach()
 
-  add_custom_target(${_name}_cpplint
+  add_custom_target(${PROJECT_NAME}_cpplint
     COMMAND
-      ${CPPLINT_BIN} ${_args} ${_files}
+      ${CMAKE_BINARY_DIR}/cpplint ${_args} ${_files}
     WORKING_DIRECTORY
       "${CMAKE_CURRENT_SOURCE_DIR}"
     COMMENT
-      "Running cpplint on target ${_name}..."
+      "Running cpplint on target ${PROJECT_NAME}..."
     VERBATIM
   )
 
-  add_dependencies(${_name} ${_name}_cpplint)
+  add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_cpplint)
 endfunction()
