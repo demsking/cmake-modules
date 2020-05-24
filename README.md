@@ -6,7 +6,7 @@ projects over years.
 ## Install
 
 ```sh
-whet -o cmake/InstallModule.cmake https://gitlab.com/demsking/cmake-modules/-/raw/master/InstallModule.cmake
+wget -o cmake/InstallModule.cmake https://gitlab.com/demsking/cmake-modules/-/raw/master/InstallModule.cmake
 ```
 
 ## Usage
