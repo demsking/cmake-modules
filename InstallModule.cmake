@@ -16,6 +16,8 @@
 # along with this library. If not, see <http://www.gnu.org/licenses/>.
 #############################################################################
 
+option(MODULES_DIR "${CMAKE_SOURCE_DIR}/.modules")
+
 function(install_cmake_module MODULE_NAME MODULE_URL)
   set(MODULE_RELATIVE_PATH "${MODULE_NAME}.cmake")
   set(MODULE_ABSOLUTE_PATH "${MODULES_DIR}/${MODULE_RELATIVE_PATH}")
@@ -31,4 +33,8 @@ function(install_cmake_module MODULE_NAME MODULE_URL)
 
   message(STATUS "Including ${MODULE_RELATIVE_PATH}")
   include(${MODULE_ABSOLUTE_PATH})
+endfunction()
+
+function(load_cmake_module MODULE_NAME)
+  install_cmake_module(${MODULE_NAME} "https://gitlab.com/demsking/cmake-modules/-/raw/master/${MODULE_NAME}.cmake")
 endfunction()
