@@ -3,9 +3,9 @@
 # Copyright (C) 2020 Sébastien Demanou <demsking@gmail.com>
 #
 #  include(CPPLINT)
-#  add_cpplint(<target-name> [UNUSED_FUNCTIONS] [STYLE] [POSSIBLE_ERROR] [FORCE] [FAIL_ON_WARNINGS]) -
+#  add_cpplint(<target-name> [cpplint flags]) -
 #    Create a target to check a target's sources with cppcheck and the indicated options
-#  add_cpplint_sources(<target-name> [UNUSED_FUNCTIONS] [STYLE] [POSSIBLE_ERROR] [FORCE] [FAIL_ON_WARNINGS]) -
+#  add_cpplint_sources(<target-name> [cpplint flags]) -
 #    Create a target to check standalone sources with cppcheck and the indicated options
 #
 # Requires CMake 2.8 or newer (uses VERSION_LESS)
@@ -23,7 +23,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this library. If not, see <http://www.gnu.org/licenses/>.
 #############################################################################
-
 
 if(__add_cpplint)
   return()
@@ -61,20 +60,19 @@ function(add_cpplint_sources _targetname)
         message(FATAL_ERROR
           "Adding CPPLINT for file target ${_targetname}: "
           "File ${_source} does not exist or needs a corrected path location "
-          "since we think its absolute path is ${_cpplint_loc}")
+          "since we think its absolute path is ${_cpplint_loc}"
+        )
       endif()
     endif()
   endforeach()
 
   add_custom_target(${_targetname}_cpplint
     COMMAND
-      ${CPPLINT_BIN}
-      ${_args}
-      ${_files}
+      ${CPPLINT_BIN} ${_args} ${_files}
     WORKING_DIRECTORY
       "${CMAKE_CURRENT_SOURCE_DIR}"
     COMMENT
-      "${_targetname}_cpplint: Running cpplint on target ${_targetname}..."
+      "Running cpplint on target ${_targetname}..."
     VERBATIM
   )
 
@@ -84,7 +82,8 @@ endfunction()
 function(add_cpplint _name)
   if(NOT TARGET ${_name})
     message(FATAL_ERROR
-      "add_cpplint given a target name that does not exist: '${_name}' !")
+      "add_cpplint given a target name that does not exist: '${_name}' !"
+    )
   endif()
 
   list(JOIN ARGN " " _args)
@@ -94,22 +93,20 @@ function(add_cpplint _name)
 
   foreach(_source ${_cpplint_sources})
     get_source_file_property(_cpplint_lang "${_source}" LANGUAGE)
-    get_source_file_property(_cpplint_loc "${_source}" LOCATION)
 
     if(("${_cpplint_lang}" STREQUAL "C") OR ("${_cpplint_lang}" STREQUAL "CXX"))
+      get_source_file_property(_cpplint_loc "${_source}" LOCATION)
       list(APPEND _files "${_cpplint_loc}")
     endif()
   endforeach()
 
   add_custom_target(${_name}_cpplint
     COMMAND
-      ${CPPLINT_BIN}
-      ${_args}
-      ${_files}
+      ${CPPLINT_BIN} ${_args} ${_files}
     WORKING_DIRECTORY
       "${CMAKE_CURRENT_SOURCE_DIR}"
     COMMENT
-      "${_name}_cpplint: Running cpplint on target ${_name}..."
+      "Running cpplint on target ${_name}..."
     VERBATIM
   )
 
