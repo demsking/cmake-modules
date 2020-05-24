@@ -5,8 +5,9 @@
 # Usage:
 #   include(StableCoder)
 #   install_stablecoder_script(<script-name>)
-#   install_stablecoder_script(NAME <script-name>)
-#   install_stablecoder_script(NAME <script-name> VERSION <script-version>)
+#   install_stablecoder_script(NAME <script-name>
+#     [VERSION <script-version>]
+#     [INSTALL_LOCATION <dir>])
 #
 # This library is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published
