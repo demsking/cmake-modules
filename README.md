@@ -13,6 +13,9 @@ wget -O cmake/InstallModule.cmake https://gitlab.com/demsking/cmake-modules/-/ra
 ## Usage
 
 ```cmake
+set(MODULES_DIR "${CMAKE_SOURCE_DIR}/.modules")
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;${MODULES_DIR}")
+
 include("InstallModule")
 
 load_cmake_module(<module-name>)
