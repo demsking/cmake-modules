@@ -16,7 +16,8 @@
 # along with this library. If not, see <http://www.gnu.org/licenses/>.
 #############################################################################
 
-option(MODULES_DIR "${CMAKE_SOURCE_DIR}/.modules")
+set(MODULES_DIR "${CMAKE_SOURCE_DIR}/.modules")
+set(CMAKE_MODULE_PATH ${MODULES_DIR})
 
 function(install_cmake_module MODULE_NAME MODULE_URL)
   set(MODULE_RELATIVE_PATH "${MODULE_NAME}.cmake")
