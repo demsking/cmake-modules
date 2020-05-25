@@ -4,10 +4,16 @@
 #
 # Usage:
 #   include(CPPLINT)
-#   add_cpplint(<target-name> [cpplint flags])
-#     Create a target to check a target's sources with cppcheck and the indicated options
-#   add_cpplint_sources(<target-name> [cpplint flags])
-#     Create a target to check standalone sources with cppcheck and the indicated options
+#
+#   - Create a target to check a target's sources with cppcheck and the indicated options
+#     add_cpplint(<target-name> [cpplint flags])
+#
+#   - Create a target to check standalone sources with cppcheck and the indicated options
+#     add_cpplint_sources(
+#       TARGET <target-name>
+#       SOURCES <sources>
+#       [OPTIONS <cpplint-options>]
+#     )
 #
 # Requires CMake 2.8 or newer (uses VERSION_LESS)
 #
@@ -42,47 +48,27 @@ if(NOT EXISTS ${CPPLINT_FILE})
   )
 endif()
 
-function(add_cpplint_sources TARGET_NAME)
-  list(JOIN ARGN " " _args)
-  set(_files)
+function(add_cpplint_sources)
+  set(oneValueArgs TARGET OPTIONS SOURCES)
+  cmake_parse_arguments(ARG "" "${oneValueArgs}" "" ${ARGN})
 
-  foreach(_source ${_input})
-    get_source_file_property(_cpplint_loc "${_source}" LOCATION)
+  if(NOT TARGET ${ARG_TARGET})
+    message(FATAL_ERROR
+      "add_cpplint given a target name that does not exist: '${ARG_TARGET}' !"
+    )
+  endif()
 
-    if(_cpplint_loc)
-      # This file has a source file property, carry on.
-      get_source_file_property(_cpplint_lang "${_source}" LANGUAGE)
-
-      if(("${_cpplint_lang}" STREQUAL "C") OR ("${_cpplint_lang}" STREQUAL "CXX"))
-        list(APPEND _files "${_cpplint_loc}")
-      endif()
-    else()
-      # This file doesn't have source file properties - figure it out.
-      get_filename_component(_cpplint_loc "${_source}" ABSOLUTE)
-
-      if(EXISTS "${_cpplint_loc}")
-        list(APPEND _files "${_cpplint_loc}")
-      else()
-        message(FATAL_ERROR
-          "Adding CPPLINT for file target ${TARGET_NAME}: "
-          "File ${_source} does not exist or needs a corrected path location "
-          "since we think its absolute path is ${_cpplint_loc}"
-        )
-      endif()
-    endif()
-  endforeach()
-
-  add_custom_target(${PROJECT_NAME}_cpplint
+  add_custom_target(${ARG_TARGET}_cpplint
     COMMAND
-      ${CMAKE_BINARY_DIR}/cpplint ${_args} ${_files}
+      ${CMAKE_BINARY_DIR}/cpplint ${ARG_OPTIONS} ${ARG_SOURCES}
     WORKING_DIRECTORY
       "${CMAKE_CURRENT_SOURCE_DIR}"
     COMMENT
-      "Running cpplint on target ${PROJECT_NAME}..."
+      "Running cpplint on target ${ARG_TARGET}..."
     VERBATIM
   )
 
-  add_dependencies(${TARGET_NAME} ${TARGET_NAME}_cpplint)
+  add_dependencies(${ARG_TARGET} ${ARG_TARGET}_cpplint)
 endfunction()
 
 function(add_cpplint PROJECT_NAME)
